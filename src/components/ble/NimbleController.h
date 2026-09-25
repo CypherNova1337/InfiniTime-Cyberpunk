@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include "Identity.h"
 
 #define min // workaround: nimble's min/max macros conflict with libstdc++
 #define max
@@ -85,7 +86,7 @@ namespace Pinetime {
       void PersistBond(struct ble_gap_conn_desc& desc);
       void RestoreBond();
 
-      static constexpr const char* deviceName = "InfiniTime";
+      static constexpr const char* deviceName = Pinetime::Identity::handle;
       Pinetime::System::SystemTask& systemTask;
       Ble& bleController;
       DateTime& dateTimeController;

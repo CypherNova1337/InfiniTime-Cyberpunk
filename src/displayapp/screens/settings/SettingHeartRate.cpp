@@ -12,7 +12,9 @@ namespace {
   }
 }
 
-SettingHeartRate::SettingHeartRate(Pinetime::Controllers::Settings& settingsController) : settingsController {settingsController} {
+SettingHeartRate::SettingHeartRate(Pinetime::Controllers::Settings& settingsController,
+                                   Pinetime::Controllers::HeartRateController& heartRateController)
+  : settingsController {settingsController}, heartRateController {heartRateController} {
   lv_obj_t* container = lv_cont_create(lv_scr_act(), nullptr);
 
   lv_obj_set_style_local_bg_opa(container, LV_CONT_PART_MAIN, LV_STATE_DEFAULT, LV_OPA_TRANSP);
@@ -63,6 +65,11 @@ void SettingHeartRate::UpdateSelected(lv_obj_t* object, lv_event_t event) {
       if (object == cbOption[i]) {
         lv_checkbox_set_checked(cbOption[i], true);
         settingsController.SetHeartRateBackgroundMeasurementInterval(options[i].intervalInSeconds);
+        // Start measuring right away instead of waiting for the heart rate app to be opened
+        if (options[i].intervalInSeconds.has_value() &&
+            heartRateController.State() == Pinetime::Controllers::HeartRateController::States::Stopped) {
+          heartRateController.Enable();
+        }
       } else {
         lv_checkbox_set_checked(cbOption[i], false);
       }

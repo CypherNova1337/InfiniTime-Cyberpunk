@@ -24,16 +24,19 @@
 
 This fork reworks InfiniTime into a neon, hacker-con-ready build for the PineTime.
 
-| NetRunner | Glitch | Matrix |
-|:-:|:-:|:-:|
-| ![NetRunner](doc/cyberpunk/netrunner.png) | ![Glitch](doc/cyberpunk/netrunner-glitch.png) | ![Matrix](doc/cyberpunk/matrix.png) |
-| **Launcher** | **Settings** | **Terminal** |
-| ![Launcher](doc/cyberpunk/launcher.png) | ![Settings](doc/cyberpunk/settings.png) | ![Terminal](doc/cyberpunk/terminal.png) |
+| NetRunner | Glitch | Matrix | Badge |
+|:-:|:-:|:-:|:-:|
+| ![NetRunner](doc/cyberpunk/netrunner.png) | ![Glitch](doc/cyberpunk/netrunner-glitch.png) | ![Matrix](doc/cyberpunk/matrix.png) | ![Badge](doc/cyberpunk/badge.png) |
+| **Launcher** | **Settings** | **Terminal** | |
+| ![Launcher](doc/cyberpunk/launcher.png) | ![Settings](doc/cyberpunk/settings.png) | ![Terminal](doc/cyberpunk/terminal.png) | |
 
 What's different from upstream:
 
-- **NetRunner watch face** (new default): chromatic-aberration time with random glitch bursts plus a guaranteed glitch every minute, HUD frame lines, seconds sweep bar, link/power status, HR + steps, weather, and the Unix epoch in hex. The handle in the bottom-left corner is set by `WatchFaceNetRunner::handle`.
+- **NetRunner watch face** (new default): chromatic-aberration time with random glitch bursts plus a guaranteed glitch every minute, HUD frame lines, seconds sweep bar, link/power status, HR + steps, weather, and the Unix epoch in hex. The handle in the bottom-left corner comes from `src/Identity.h`.
 - **Matrix app**: digital rain built from ASCII and Cyrillic glyphs. Tap to cycle green, cyan, and magenta palettes.
+- **Badge app** (skull icon): your handle and a scannable QR code linking to your GitHub. The screen stays on while it is open. To point it somewhere else, run `python3 tools/badge/generate_badge_qr.py <url>` (needs `pip install segno`).
+- **Bluetooth name** is your handle (`VOIDSEC`), set in `src/Identity.h`. Gadgetbridge only auto-detects watches whose name starts with `InfiniTime`, so pair it before flashing this firmware, or temporarily change the name back to pair.
+- **Heart rate in the background**: measurement starts at boot and runs every 5 minutes by default, so you never have to open the heart rate app. If no pulse is found for 30 seconds (the watch is off your wrist or on the charger), it backs off and retries every 5 minutes, so even *Cont* mode doesn't run the sensor all day on the nightstand. Change the interval in *Settings → Heart rate*.
 - **Neon theme**: cyan and magenta outlined buttons, sharp corners, dark purple surfaces, and recolored launcher tiles, lists, sliders, and switches.
 - **Terminal face** recolored as a root shell.
 - **Trimmed build**: Paint, Paddle, 2048, Dice, and Metronome apps plus the Analog, PineTimeStyle, Infineat, Casio, and Pride Flag faces are no longer built by default, which frees about 49 KB of flash. Re-enable any of them in `src/displayapp/apps/CMakeLists.txt`.

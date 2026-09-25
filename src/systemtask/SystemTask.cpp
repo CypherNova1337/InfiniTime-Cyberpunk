@@ -13,6 +13,7 @@
 #include "drivers/SpiNorFlash.h"
 #include "drivers/TwiMaster.h"
 #include "drivers/Hrs3300.h"
+#include "components/heartrate/HeartRateController.h"
 #include "drivers/PinMap.h"
 #include "main.h"
 #include "BootErrors.h"
@@ -148,6 +149,9 @@ void SystemTask::Work() {
   heartRateSensor.Init();
   heartRateSensor.Disable();
   heartRateApp.Start();
+  if (settingsController.GetHeartRateBackgroundMeasurementInterval().has_value()) {
+    heartRateController.Enable();
+  }
 
   buttonHandler.Init(this);
 

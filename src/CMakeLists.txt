@@ -394,6 +394,7 @@ list(APPEND SOURCE_FILES
         displayapp/screens/Timer.cpp
         displayapp/screens/Dice.cpp
         displayapp/screens/Matrix.cpp
+        displayapp/screens/Badge.cpp
         displayapp/screens/PassKey.cpp
         displayapp/screens/Error.cpp
         displayapp/screens/Alarm.cpp
@@ -593,6 +594,7 @@ set(INCLUDE_FILES
 
         ${CMAKE_CURRENT_BINARY_DIR}/src/Version.h
         BootloaderVersion.h
+        Identity.h
         logging/Logger.h
         logging/NrfLogger.h
         displayapp/DisplayApp.h
@@ -621,6 +623,8 @@ set(INCLUDE_FILES
         displayapp/screens/Timer.h
         displayapp/screens/Dice.h
         displayapp/screens/Matrix.h
+        displayapp/screens/Badge.h
+        displayapp/screens/BadgeQr.h
         displayapp/screens/Alarm.h
         displayapp/Colors.h
         displayapp/widgets/Counter.h

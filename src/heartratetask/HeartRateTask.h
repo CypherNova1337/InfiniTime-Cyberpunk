@@ -51,6 +51,10 @@ namespace Pinetime {
       Controllers::Ppg ppg;
       TickType_t lastMeasurementTime;
       TickType_t measurementStartTime;
+      // Time of the last valid reading (or the start of the measurement if none yet)
+      TickType_t lastPulseTime;
+      // Set when a background measurement found no pulse, e.g. the watch is off the wrist
+      bool noPulse = false;
     };
 
   }

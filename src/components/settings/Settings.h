@@ -382,7 +382,7 @@ namespace Pinetime {
         Controllers::BrightnessController::Levels brightLevel = Controllers::BrightnessController::Levels::Medium;
 
         bool dfuAndFsEnabledOnBoot = false;
-        uint16_t heartRateBackgroundPeriod = std::numeric_limits<uint16_t>::max(); // Disabled by default
+        uint16_t heartRateBackgroundPeriod = 5 * 60; // Measure every 5 minutes by default
       };
 
       SettingsData settings;

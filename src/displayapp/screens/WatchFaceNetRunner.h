@@ -25,9 +25,6 @@ namespace Pinetime {
 
       class WatchFaceNetRunner : public Screen {
       public:
-        // Handle shown in the bottom-left corner of the HUD. Change it to your own.
-        static constexpr const char* handle = "VOIDSEC";
-
         WatchFaceNetRunner(Controllers::DateTime& dateTimeController,
                            const Controllers::Battery& batteryController,
                            const Controllers::Ble& bleController,

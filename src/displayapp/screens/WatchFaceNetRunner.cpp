@@ -1,6 +1,7 @@
 #include "displayapp/screens/WatchFaceNetRunner.h"
 
 #include <lvgl/lvgl.h>
+#include "Identity.h"
 #include "components/battery/BatteryController.h"
 #include "components/ble/BleController.h"
 #include "components/ble/NotificationManager.h"
@@ -118,7 +119,7 @@ WatchFaceNetRunner::WatchFaceNetRunner(Controllers::DateTime& dateTimeController
 
   // Footer
   labelHandle = CreateLabel(lv_scr_act(), Colors::neonMagenta);
-  lv_label_set_text_static(labelHandle, handle);
+  lv_label_set_text_static(labelHandle, Pinetime::Identity::handle);
   lv_obj_set_pos(labelHandle, 4, 212);
 
   labelHex = CreateLabel(lv_scr_act(), Colors::neonPurple);
@@ -276,7 +277,7 @@ void WatchFaceNetRunner::Refresh() {
   heartbeat = heartRateController.HeartRate();
   heartbeatRunning = heartRateController.State() != Controllers::HeartRateController::States::Stopped;
   if (stepCount.IsUpdated() || heartbeat.IsUpdated() || heartbeatRunning.IsUpdated()) {
-    if (heartbeatRunning.Get()) {
+    if (heartbeatRunning.Get() && heartbeat.Get() != 0) {
       lv_label_set_text_fmt(labelVitals, "#ff2a6d HR# %03d  #05d9e8 STP# %lu", heartbeat.Get(), stepCount.Get());
     } else {
       lv_label_set_text_fmt(labelVitals, "#ff2a6d HR# ---  #05d9e8 STP# %lu", stepCount.Get());
