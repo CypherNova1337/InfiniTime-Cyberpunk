@@ -44,8 +44,11 @@ List::List(uint8_t screenID,
 
       static constexpr int btnHeight = (LV_HOR_RES_MAX - ((MAXLISTITEMS - 1) * innerPad)) / MAXLISTITEMS;
       itemApps[i] = lv_btn_create(container, nullptr);
-      lv_obj_set_style_local_radius(itemApps[i], LV_BTN_PART_MAIN, LV_STATE_DEFAULT, btnHeight / 3);
+      lv_obj_set_style_local_radius(itemApps[i], LV_BTN_PART_MAIN, LV_STATE_DEFAULT, 3);
       lv_obj_set_style_local_bg_color(itemApps[i], LV_BTN_PART_MAIN, LV_STATE_DEFAULT, Colors::bgAlt);
+      lv_obj_set_style_local_border_side(itemApps[i], LV_BTN_PART_MAIN, LV_STATE_DEFAULT, LV_BORDER_SIDE_LEFT);
+      lv_obj_set_style_local_border_width(itemApps[i], LV_BTN_PART_MAIN, LV_STATE_DEFAULT, 4);
+      lv_obj_set_style_local_border_color(itemApps[i], LV_BTN_PART_MAIN, LV_STATE_DEFAULT, Colors::neonMagenta);
       lv_obj_set_width(itemApps[i], LV_HOR_RES - 8);
       lv_obj_set_height(itemApps[i], btnHeight);
       lv_obj_set_event_cb(itemApps[i], ButtonEventHandler);
@@ -54,7 +57,7 @@ List::List(uint8_t screenID,
       lv_obj_set_style_local_clip_corner(itemApps[i], LV_BTN_PART_MAIN, LV_STATE_DEFAULT, true);
 
       lv_obj_t* icon = lv_label_create(itemApps[i], nullptr);
-      lv_obj_set_style_local_text_color(icon, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_YELLOW);
+      lv_obj_set_style_local_text_color(icon, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, Colors::neonCyan);
       lv_label_set_text_static(icon, applications[i].icon);
       lv_label_set_long_mode(icon, LV_LABEL_LONG_CROP);
       lv_label_set_align(icon, LV_LABEL_ALIGN_CENTER);

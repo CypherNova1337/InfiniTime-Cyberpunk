@@ -20,6 +20,26 @@
 
 </div>
 
+## // CYBERPUNK EDITION
+
+This fork reworks InfiniTime into a neon, hacker-con-ready build for the PineTime.
+
+| NetRunner | Glitch | Matrix |
+|:-:|:-:|:-:|
+| ![NetRunner](doc/cyberpunk/netrunner.png) | ![Glitch](doc/cyberpunk/netrunner-glitch.png) | ![Matrix](doc/cyberpunk/matrix.png) |
+| **Launcher** | **Settings** | **Terminal** |
+| ![Launcher](doc/cyberpunk/launcher.png) | ![Settings](doc/cyberpunk/settings.png) | ![Terminal](doc/cyberpunk/terminal.png) |
+
+What's different from upstream:
+
+- **NetRunner watch face** (new default): chromatic-aberration time with random glitch bursts plus a guaranteed glitch every minute, HUD frame lines, seconds sweep bar, link/power status, HR + steps, weather, and the Unix epoch in hex. The handle in the bottom-left corner is set by `WatchFaceNetRunner::handle`.
+- **Matrix app**: digital rain built from ASCII and Cyrillic glyphs. Tap to cycle green, cyan, and magenta palettes.
+- **Neon theme**: cyan and magenta outlined buttons, sharp corners, dark purple surfaces, and recolored launcher tiles, lists, sliders, and switches.
+- **Terminal face** recolored as a root shell.
+- **Trimmed build**: Paint, Paddle, 2048, Dice, and Metronome apps plus the Analog, PineTimeStyle, Infineat, Casio, and Pride Flag faces are no longer built by default, which frees about 49 KB of flash. Re-enable any of them in `src/displayapp/apps/CMakeLists.txt`.
+
+> If your watch already has saved settings, pick NetRunner in *Settings → Watch face*.
+
 ## New to InfiniTime?
 
 - [Getting started with InfiniTime](doc/gettingStarted/gettingStarted-1.0.md)

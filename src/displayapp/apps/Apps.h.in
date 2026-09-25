@@ -30,6 +30,7 @@ namespace Pinetime {
       Steps,
       Dice,
       Weather,
+      Matrix,
       PassKey,
       QuickSettings,
       Settings,
@@ -56,6 +57,7 @@ namespace Pinetime {
       Infineat,
       CasioStyleG7710,
       PrideFlag,
+      NetRunner,
     };
 
     template <Apps>
