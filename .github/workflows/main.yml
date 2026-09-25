@@ -3,7 +3,7 @@ name: CI
 # Run this workflow whenever the build may be affected
 on:
   push:
-    branches: [ main ]
+    branches: [ main, "voidsec-hub/**" ]
     paths-ignore:
       - 'doc/**'
       - '**.md'

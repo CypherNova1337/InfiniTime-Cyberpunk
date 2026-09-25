@@ -132,6 +132,10 @@ namespace Pinetime {
       void Work();
       bool isBleDiscoveryTimerRunning = false;
       uint8_t bleDiscoveryTimer = 0;
+      // Counts down in state update periods after a connection, then the connection is classified
+      uint8_t intrusionCheckTimer = 0;
+      void RaiseIntrusionAlert();
+      void SaveIntrusionLog();
       TimerHandle_t measureBatteryTimer;
       uint8_t wakeLocksHeld = 0;
       SystemTaskState state = SystemTaskState::Running;
