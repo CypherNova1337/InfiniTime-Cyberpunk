@@ -45,7 +45,7 @@ What's different from upstream:
 ### Installing with Gadgetbridge
 
 1. Grab `pinetime-mcuboot-app-dfu-<version>.zip` (and `infinitime-resources-<version>.zip` for the navigation icons) from the CI artifacts of this branch.
-2. On the watch, enable firmware updates in *Settings → Firmware update* if they are turned off.
+2. On the watch, go to *Settings → Over-the-air* and pick *Till reboot*. Updates and file uploads are refused while it is *Disabled*, and *Till reboot* shuts the door again after the update.
 3. In Gadgetbridge, open the zip with *File installer* (or share it to Gadgetbridge) and install. Then install the resources zip the same way.
 4. After the watch reboots, go to *Settings → Firmware* and tap *Validate*, otherwise the old firmware comes back on the next reboot.
 
