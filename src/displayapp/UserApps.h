@@ -4,6 +4,9 @@
 
 #include "displayapp/screens/Alarm.h"
 #include "displayapp/screens/Dice.h"
+#include "displayapp/screens/Matrix.h"
+#include "displayapp/screens/Badge.h"
+#include "displayapp/screens/IntrusionLog.h"
 #include "displayapp/screens/Timer.h"
 #include "displayapp/screens/Twos.h"
 #include "displayapp/screens/Tile.h"
@@ -15,6 +18,7 @@
 #include "displayapp/screens/WatchFacePineTimeStyle.h"
 #include "displayapp/screens/WatchFaceTerminal.h"
 #include "displayapp/screens/WatchFacePrideFlag.h"
+#include "displayapp/screens/WatchFaceNetRunner.h"
 
 namespace Pinetime {
   namespace Applications {

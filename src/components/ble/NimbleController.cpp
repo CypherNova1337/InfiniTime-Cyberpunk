@@ -49,7 +49,8 @@ NimbleController::NimbleController(Pinetime::System::SystemTask& systemTask,
     heartRateService {*this, heartRateController},
     motionService {*this, motionController},
     fsService {systemTask, fs},
-    serviceDiscovery({&currentTimeClient, &alertNotificationClient}) {
+    serviceDiscovery({&currentTimeClient, &alertNotificationClient}),
+    intrusionLogger {fs} {
 }
 
 void nimble_on_reset(int reason) {
@@ -132,6 +133,7 @@ void NimbleController::Init() {
   ASSERT(rc == 0);
 
   RestoreBond();
+  intrusionLogger.Load();
 
   StartAdvertising();
 }
@@ -207,6 +209,17 @@ int NimbleController::OnGAPEvent(ble_gap_event* event) {
       } else {
         connectionHandle = event->connect.conn_handle;
         bleController.Connect();
+
+        struct ble_gap_conn_desc desc;
+        if (ble_gap_conn_find(connectionHandle, &desc) == 0) {
+          union ble_store_key key;
+          union ble_store_value value;
+          memset(&key, 0, sizeof key);
+          key.sec.peer_addr = desc.peer_id_addr;
+          const bool knownBond = ble_store_read_peer_sec(&key.sec, &value.sec) == 0;
+          const auto now = std::chrono::duration_cast<std::chrono::seconds>(dateTimeController.CurrentDateTime().time_since_epoch());
+          intrusionLogger.OnConnect(desc.peer_ota_addr.val, desc.peer_ota_addr.type, knownBond, static_cast<uint32_t>(now.count()));
+        }
         systemTask.PushMessage(Pinetime::System::Messages::BleConnected);
         // Service discovery is deferred via systemtask
       }
@@ -219,6 +232,12 @@ int NimbleController::OnGAPEvent(ble_gap_event* event) {
 
       if (event->disconnect.conn.sec_state.bonded) {
         PersistBond(event->disconnect.conn);
+      }
+
+      if (intrusionLogger.OnDisconnect(HasBond())) {
+        systemTask.PushMessage(Pinetime::System::Messages::OnIntrusion);
+      } else if (intrusionLogger.IsDirty()) {
+        systemTask.PushMessage(Pinetime::System::Messages::IntrusionLogChanged);
       }
 
       currentTimeClient.Reset();
@@ -258,12 +277,15 @@ int NimbleController::OnGAPEvent(ble_gap_event* event) {
         if (desc.sec_state.bonded) {
           PersistBond(desc);
         }
+        intrusionLogger.OnEncryptionChange(true, desc.sec_state.bonded);
 
         NRF_LOG_INFO("new state: encrypted=%d authenticated=%d bonded=%d key_size=%d",
                      desc.sec_state.encrypted,
                      desc.sec_state.authenticated,
                      desc.sec_state.bonded,
                      desc.sec_state.key_size);
+      } else if (intrusionLogger.OnEncryptionChange(false, false)) {
+        systemTask.PushMessage(Pinetime::System::Messages::OnIntrusion);
       }
       break;
 
@@ -281,6 +303,7 @@ int NimbleController::OnGAPEvent(ble_gap_event* event) {
        * Use the tinycrypt prng here since rand() is predictable.
        */
       NRF_LOG_INFO("Security event : BLE_GAP_EVENT_PASSKEY_ACTION");
+      intrusionLogger.OnPairingRequest();
       if (event->passkey.params.action == BLE_SM_IOACT_DISP) {
         struct ble_sm_io pkey = {0};
         pkey.action = event->passkey.params.action;
@@ -478,6 +501,16 @@ void NimbleController::PersistBond(struct ble_gap_conn_desc& desc) {
     }
     systemTask.PushMessage(Pinetime::System::Messages::EnableSleeping);
   }
+}
+
+bool NimbleController::HasBond() {
+  int count = 0;
+  ble_store_util_count(BLE_STORE_OBJ_TYPE_PEER_SEC, &count);
+  return count > 0;
+}
+
+bool NimbleController::CheckIntrusion() {
+  return intrusionLogger.Classify(HasBond());
 }
 
 void NimbleController::RestoreBond() {

@@ -13,10 +13,13 @@
 #include "drivers/SpiNorFlash.h"
 #include "drivers/TwiMaster.h"
 #include "drivers/Hrs3300.h"
+#include "components/heartrate/HeartRateController.h"
 #include "drivers/PinMap.h"
 #include "main.h"
 #include "BootErrors.h"
 
+#include <algorithm>
+#include <cstdio>
 #include <memory>
 
 using namespace Pinetime::System;
@@ -148,6 +151,9 @@ void SystemTask::Work() {
   heartRateSensor.Init();
   heartRateSensor.Disable();
   heartRateApp.Start();
+  if (settingsController.GetHeartRateBackgroundMeasurementInterval().has_value()) {
+    heartRateController.Enable();
+  }
 
   buttonHandler.Init(this);
 
@@ -239,6 +245,8 @@ void SystemTask::Work() {
           displayApp.PushMessage(Pinetime::Applications::Display::Messages::NotifyDeviceActivity);
           isBleDiscoveryTimerRunning = true;
           bleDiscoveryTimer = 5;
+          // Give a bonded phone 10 seconds to encrypt the link before calling it an intrusion
+          intrusionCheckTimer = 100;
           break;
         case Messages::BleFirmwareUpdateStarted:
           GoToRunning();
@@ -366,6 +374,12 @@ void SystemTask::Work() {
           GoToRunning();
           displayApp.PushMessage(Pinetime::Applications::Display::Messages::ShowPairingKey);
           break;
+        case Messages::OnIntrusion:
+          RaiseIntrusionAlert();
+          break;
+        case Messages::IntrusionLogChanged:
+          SaveIntrusionLog();
+          break;
         case Messages::BleRadioEnableToggle:
           if (settingsController.GetBleRadioEnabled()) {
             nimbleController.EnableRadio();
@@ -390,6 +404,13 @@ void SystemTask::Work() {
           bleDiscoveryTimer--;
         }
       }
+      if (intrusionCheckTimer > 0 && --intrusionCheckTimer == 0) {
+        if (nimbleController.CheckIntrusion()) {
+          RaiseIntrusionAlert();
+        } else {
+          SaveIntrusionLog();
+        }
+      }
       monitor.Process();
       NoInit_BackUpTime = dateTimeController.CurrentDateTime();
       if (nrf_gpio_pin_read(PinMap::Button) == 0) {
@@ -399,6 +420,37 @@ void SystemTask::Work() {
     }
   }
 #pragma clang diagnostic pop
+}
+
+void SystemTask::SaveIntrusionLog() {
+  auto& log = nimbleController.intrusionLog();
+  // The SPI flash is powered down while sleeping, the log gets saved on the next alert or when the app is opened
+  if (log.IsDirty() && state == SystemTaskState::Running) {
+    log.Save();
+  }
+}
+
+void SystemTask::RaiseIntrusionAlert() {
+  GoToRunning();
+  SaveIntrusionLog();
+
+  auto& log = nimbleController.intrusionLog();
+  if (log.Count() == 0) {
+    return;
+  }
+  const auto entry = log.Get(0);
+  char address[18];
+  Controllers::IntrusionLog::FormatAddress(entry, address);
+
+  Controllers::NotificationManager::Notification notif;
+  const int size =
+    snprintf(notif.message.data(), notif.message.size(), "UNKNOWN LINK%c%s\n%s", '\0', address, Controllers::IntrusionLog::Describe(entry));
+  notif.size = std::min<size_t>(size + 1, notif.message.size());
+  notif.category = Controllers::NotificationManager::Categories::SimpleAlert;
+  notificationManager.Push(std::move(notif));
+  if (settingsController.GetNotificationStatus() == Pinetime::Controllers::Settings::Notification::On) {
+    displayApp.PushMessage(Pinetime::Applications::Display::Messages::NewNotification);
+  }
 }
 
 void SystemTask::GoToRunning() {

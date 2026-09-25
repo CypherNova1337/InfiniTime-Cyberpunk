@@ -9,6 +9,9 @@ using namespace Pinetime::Applications;
 
 namespace {
   constexpr TickType_t backgroundMeasurementTimeLimit = 30 * configTICK_RATE_HZ;
+  // When no pulse is found in the background, retry at most this often.
+  // Stops continuous mode from running the sensor all day while the watch is off the wrist.
+  constexpr TickType_t noPulseRetryInterval = 5 * 60 * configTICK_RATE_HZ;
 }
 
 std::optional<TickType_t> HeartRateTask::BackgroundMeasurementInterval() const {
@@ -16,7 +19,11 @@ std::optional<TickType_t> HeartRateTask::BackgroundMeasurementInterval() const {
   if (!interval.has_value()) {
     return std::nullopt;
   }
-  return interval.value() * configTICK_RATE_HZ;
+  TickType_t ticks = interval.value() * configTICK_RATE_HZ;
+  if (noPulse && ticks < noPulseRetryInterval) {
+    return noPulseRetryInterval;
+  }
+  return ticks;
 }
 
 bool HeartRateTask::BackgroundMeasurementNeeded() const {
@@ -185,6 +192,7 @@ void HeartRateTask::StartMeasurement() {
   measurementSucceeded = false;
   count = 0;
   measurementStartTime = xTaskGetTickCount();
+  lastPulseTime = measurementStartTime;
 }
 
 void HeartRateTask::StopMeasurement() {
@@ -235,6 +243,8 @@ void HeartRateTask::HandleSensorData() {
     }
     measurementSucceeded = true;
     valueCurrentlyShown = true;
+    lastPulseTime = xTaskGetTickCount();
+    noPulse = false;
     controller.Update(Controllers::HeartRateController::States::Running, bpm);
     return;
   }
@@ -253,6 +263,12 @@ void HeartRateTask::HandleSensorData() {
       valueCurrentlyShown = false;
     }
     if (state == States::BackgroundMeasuring) {
+      if (xTaskGetTickCount() - lastPulseTime > backgroundMeasurementTimeLimit) {
+        // No pulse for a while: back off until the watch is worn again
+        noPulse = true;
+        controller.Update(Controllers::HeartRateController::States::Running, 0);
+        valueCurrentlyShown = false;
+      }
       lastMeasurementTime = xTaskGetTickCount() - backgroundMeasurementTimeLimit;
     } else {
       lastMeasurementTime = xTaskGetTickCount();

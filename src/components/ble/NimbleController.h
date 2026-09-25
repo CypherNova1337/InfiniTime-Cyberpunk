@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include "Identity.h"
 
 #define min // workaround: nimble's min/max macros conflict with libstdc++
 #define max
@@ -17,6 +18,7 @@
 #include "components/ble/FSService.h"
 #include "components/ble/HeartRateService.h"
 #include "components/ble/ImmediateAlertService.h"
+#include "components/ble/IntrusionLog.h"
 #include "components/ble/MusicService.h"
 #include "components/ble/NavigationService.h"
 #include "components/ble/ServiceDiscovery.h"
@@ -71,6 +73,13 @@ namespace Pinetime {
         return weatherService;
       };
 
+      Pinetime::Controllers::IntrusionLog& intrusionLog() {
+        return intrusionLogger;
+      };
+
+      // Classifies the current connection for the intrusion log, returns true if it should raise an alert
+      bool CheckIntrusion();
+
       uint16_t connHandle();
       void NotifyBatteryLevel(uint8_t level);
 
@@ -84,8 +93,9 @@ namespace Pinetime {
     private:
       void PersistBond(struct ble_gap_conn_desc& desc);
       void RestoreBond();
+      bool HasBond();
 
-      static constexpr const char* deviceName = "InfiniTime";
+      static constexpr const char* deviceName = Pinetime::Identity::handle;
       Pinetime::System::SystemTask& systemTask;
       Ble& bleController;
       DateTime& dateTimeController;
@@ -107,6 +117,7 @@ namespace Pinetime {
       MotionService motionService;
       FSService fsService;
       ServiceDiscovery serviceDiscovery;
+      IntrusionLog intrusionLogger;
 
       uint8_t addrType;
       uint16_t connectionHandle = BLE_HS_CONN_HANDLE_NONE;
